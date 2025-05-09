@@ -1,5 +1,4 @@
-#INSTALLAZIONE DELLE LIBRERIE
-!pip install transformers
+#IMPORTAZIONE DELLE LIBRERIE
 from transformers import ViTImageProcessor, ViTForImageClassification
 from PIL import Image
 from sklearn.metrics import accuracy_score, confusion_matrix
