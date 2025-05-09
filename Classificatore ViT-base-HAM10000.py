@@ -4,7 +4,6 @@ from PIL import Image
 from sklearn.metrics import accuracy_score, confusion_matrix
 import torch
 import torch.nn.functional as F
-from google.colab import drive
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 import os
@@ -13,11 +12,10 @@ import json
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-#ACCESSO A DRIVE
-drive.mount('/content/drive')
-path_valutazione = "path dataset di valutazione"
-path_csv = "path csv per le etichette di valutazione"
-json_path = "path del json per il salvataggio delle valutazioni"
+#PATH DEI FILE
+path_valutazione = "Path del dataset di test"
+path_csv = "Path del file.csv contenente le etichette per le immagini di test"
+json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 
 #RISORSE DI CALCOLO
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -55,7 +53,7 @@ def salva_dati():
 
 #CARICAMENTO DEL FILE CSV PER SCEGLIERE IMG
 dati = carica_dati()
-df = pd.read_csv(path_csv)  #selezione immagini
+df = pd.read_csv(path_csv) #selezione immagini
 df = df.set_index("image") #nome dell'immagine sarà l'indice
 
 img_test = sorted([os.path.join(path_valutazione, img) for img in os.listdir(path_valutazione) if img.lower().endswith(('png', 'jpg', 'jpeg'))]) #lista delle img ordinate
@@ -70,12 +68,13 @@ with torch.no_grad(): #modalità valutazione
             classificazione_reale = df.loc[img_name].idxmax().lower() #Cerca tipo di lesione nel csv per quell'immagine
             classificazione_reale_numerica = acronimo_classi_inverso.get(classificazione_reale) #converte in numero
 
-        img = Image.open(img_path)
-        inputs = processore_img(images=img, return_tensors="pt").to(device)
+        img = Image.open(img_path) #apertura dell'immagine
+        inputs = processore_img(images=img, return_tensors="pt").to(device) #processazione dell'immagine
+
+        #Esecuzione del modello
         outputs = model_ham10000(**inputs)
         logits = outputs.logits
-
-        classificazione_vit_numerica = torch.argmax(logits, dim=-1).item()
+        classificazione_vit_numerica = torch.argmax(logits, dim=-1).item() #classe di predizione più probabile
         classificazione_vit = etichette_classi[classificazione_vit_numerica]
 
         '''
@@ -89,7 +88,7 @@ with torch.no_grad(): #modalità valutazione
 
         print(f"Image: {img_path} - ViT: {classificazione_vit} - Real class: {classificazione_reale}")
 
-        dati["valutate"].append({
+        dati["valutate"].append({ #creazione dell'oggetto JSON
                 "img": img_path,
                 "reale": "lesione cutanea",
                 "classe_giusta": classificazione_reale,
