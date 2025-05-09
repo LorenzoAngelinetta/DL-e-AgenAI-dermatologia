@@ -78,6 +78,15 @@ with torch.no_grad(): #modalità valutazione
         classificazione_vit_numerica = torch.argmax(logits, dim=-1).item()
         classificazione_vit = etichette_classi[classificazione_vit_numerica]
 
+        '''
+        probabilita = F.softmax(logits, dim=-1) * 100 #probabilita con softmax di ogni possibile classe
+
+        #STAMPA PROBABILITA' DELLE PREDIZIONI
+        print("Probabilità predizione per ogni classe:")
+        for i, prob in enumerate(probabilita.squeeze().tolist()):
+            print(f"{etichette_classi[i]}: {prob:.2f}%")
+        '''
+
         print(f"Image: {img_path} - ViT: {classificazione_vit} - Real class: {classificazione_reale}")
 
         dati["valutate"].append({
