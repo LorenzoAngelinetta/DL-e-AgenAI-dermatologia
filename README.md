@@ -22,3 +22,12 @@ AKIEC     43.0
 BKL      217.0
 DF        44.0
 VASC      35.0
+
+
+
+
+
+!curl -fsSL https://ollama.com/install.sh | sh #installare ollama
+!nohup ollama serve & #avviare il mio processo
+!ps aux #stampare i processi
+!ollama pull z-uo/llava-med-v1.5-mistral-7b_q8_0
