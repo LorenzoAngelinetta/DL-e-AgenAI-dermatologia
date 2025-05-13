@@ -18,10 +18,9 @@ import seaborn as sns
 import pandas as pd
 
 #CARICAMENTO DEL DRIVE
-drive.mount('/content/drive')
-path_valutazione = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/ISIC_TEST"
-path_csv = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/ISIC_labels.csv"
-json_path = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/Salvataggi_JSON_finali/classificazione_LLaVaMed.json"
+path_valutazione = "Path del dataset di test"
+path_csv = "Path del file.csv contenente le etichette per le immagini di test"
+json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 
 #ISTRUZIONI E DESCRIZIONE PER L'AGENTE (IN COSA E' SPECIALIZZATO E COSA DEVE FARE)
 descrizione = [
