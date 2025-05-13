@@ -1,5 +1,5 @@
 #IMPORTAZIONE LIBRERIE
-from transformers import ViTImageProcessor, ViTForImageClassification
+from transformers import ViTImageProcessor, ViTForImageClassification 
 import torch
 import torch.nn.functional as F
 import os
