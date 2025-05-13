@@ -4,8 +4,6 @@ from PIL import Image
 from sklearn.metrics import accuracy_score, confusion_matrix
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
-from torchvision import datasets, transforms
 import os
 import pandas as pd
 import json
@@ -16,6 +14,9 @@ import seaborn as sns
 path_valutazione = "Path del dataset di test"
 path_csv = "Path del file.csv contenente le etichette per le immagini di test"
 json_path = "Path del file.json per il salvataggio delle analisi eseguite"
+
+#RISORSE DI CALCOLO
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 #DIZIONARIO DELLE CLASSI PER AVERE IL NOME DELLA CLASSE IDENTIFICATA DA HAM10000
 etichette_classi = {

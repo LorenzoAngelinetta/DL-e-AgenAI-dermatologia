@@ -1,5 +1,4 @@
 #IMPORTAZIONE DELLE LIBRERIE
-import torch
 import os
 from agno.agent import Agent
 from agno.models.google import Gemini
@@ -11,7 +10,7 @@ import json
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-
+ 
 #CARICAMENTO DEL DRIVE
 path_valutazione = "Path del dataset di test"
 path_csv = "Path del file.csv contenente le etichette per le immagini di test"

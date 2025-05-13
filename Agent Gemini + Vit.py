@@ -7,7 +7,7 @@ from agno.agent import Agent
 from agno.models.google import Gemini
 from agno.tools.duckduckgo import DuckDuckGoTools
 from agno.media import Image
-from sklearn.metrics import accuracy_score, confusion_matrix 
+from sklearn.metrics import confusion_matrix 
 import time
 import json
 import pandas as pd

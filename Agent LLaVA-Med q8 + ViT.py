@@ -1,4 +1,4 @@
-#INSTALLAZIONE E IMPORTAZIONE LIBRERIE
+#IMPORTAZIONE LIBRERIE
 from transformers import ViTImageProcessor, ViTForImageClassification
 import torch
 import torch.nn.functional as F
@@ -6,7 +6,7 @@ import os
 from agno.agent import Agent
 from agno.media import Image
 from agno.models.ollama import Ollama
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import confusion_matrix
 import json
 import time
 import pandas as pd

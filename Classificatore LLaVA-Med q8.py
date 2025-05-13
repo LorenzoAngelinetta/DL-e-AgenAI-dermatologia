@@ -1,6 +1,5 @@
 #IMPORTAZIONE LIBRERIE
 from agno.tools.duckduckgo import DuckDuckGoTools
-import torch
 import os
 from agno.agent import Agent
 from agno.media import Image
