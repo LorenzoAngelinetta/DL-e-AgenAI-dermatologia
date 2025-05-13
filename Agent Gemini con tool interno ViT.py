@@ -1,6 +1,4 @@
 #INSTALLAZIONE E IMPORTAZIONE LIBRERIE
-!pip install agno transformers
-
 from transformers import ViTImageProcessor, ViTForImageClassification
 import torch
 import torch.nn.functional as F
@@ -9,24 +7,20 @@ from agno.agent import Agent
 from agno.models.google import Gemini
 from agno.media import Image
 from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix
-import google.colab.drive as drive
 import time
 import json
 import pandas as pd
 import random
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
 #CARICAMENTO DEL DRIVE
-drive.mount('/content/drive')
-path_valutazione = "/content/drive/MyDrive//ISIC_ImageNet"
-path_csv = "/content/drive/MyDrive//ISIC_labels.csv"
-json_path = "/content/drive/MyDrive//Salvataggi_JSON_finali/gemini_ViT.json"
+path_valutazione = "Path del dataset di test"
+path_csv = "Path del file.csv contenente le etichette per le immagini di test"
+json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 
 #CHIAVE API PER UTILIZZARE AGENTE GEMINI
-os.environ["GOOGLE_API_KEY"] = ""
+os.environ["GOOGLE_API_KEY"] = "CHIAVE API"
 
 #ISTRUZIONI E DESCRIZIONE PER L'AGENTE (IN COSA E' SPECIALIZZATO E COSA DEVE FARE)
 descrizione = [

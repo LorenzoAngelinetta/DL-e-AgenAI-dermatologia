@@ -20,7 +20,6 @@ json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 #CHIAVE API PER UTILIZZARE AGENTE GEMINI
 os.environ["GOOGLE_API_KEY"] = "CHIAVE API"
 
-
 #ISTRUZIONI E DESCRIZIONE PER L'AGENTE (IN COSA E' SPECIALIZZATO E COSA DEVE FARE)
 descrizione = [
     "You are specialized in dermatology. Analyze the image to determine the type of skin lesion.",

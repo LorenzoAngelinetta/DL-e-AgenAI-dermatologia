@@ -1,6 +1,4 @@
 #INSTALLAZIONE E IMPORTAZIONE LIBRERIE
-!pip install agno transformers ollama
-
 from transformers import ViTImageProcessor, ViTForImageClassification
 import torch
 import torch.nn.functional as F
@@ -9,20 +7,17 @@ from agno.agent import Agent
 from agno.media import Image
 from agno.models.ollama import Ollama
 from sklearn.metrics import accuracy_score, confusion_matrix
-import google.colab.drive as drive
 import json
 import time
 import pandas as pd
 import random
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 #CARICAMENTO DEL DRIVE
-drive.mount('/content/drive')
-path_valutazione = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/ISIC_ImageNet"
-path_csv = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/ISIC_labels.csv"
-json_path = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/Salvataggi_JSON_finali/LLaVaMed(no_tool)_ViT.json"
+path_valutazione = "Path del dataset di test"
+path_csv = "Path del file.csv contenente le etichette per le immagini di test"
+json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 
 #ISTRUZIONI E DESCRIZIONE PER L'AGENTE (IN COSA E' SPECIALIZZATO E COSA DEVE FARE)
 descrizione = [

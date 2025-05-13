@@ -1,6 +1,4 @@
-#INSTALLAZIONE E IMPORTAZIONE LIBRERIE
-!pip install agno duckduckgo-search transformers
-
+#IMPORTAZIONE LIBRERIE
 from transformers import ViTImageProcessor, ViTForImageClassification
 import torch
 import torch.nn.functional as F
@@ -10,19 +8,20 @@ from agno.models.google import Gemini
 from agno.tools.duckduckgo import DuckDuckGoTools
 from agno.media import Image
 from sklearn.metrics import accuracy_score, confusion_matrix 
-import google.colab.drive as drive
 import time
 import json
 import pandas as pd
 import random
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-ciuao
+#CARICAMENTO DEL DRIVE
+path_valutazione = "Path del dataset di test"
+path_csv = "Path del file.csv contenente le etichette per le immagini di test"
+json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 
 #CHIAVE API PER UTILIZZARE AGENTE GEMINI
-os.environ["GOOGLE_API_KEY"] = ""
+os.environ["GOOGLE_API_KEY"] = "CHIAVE API"
 
 #ISTRUZIONI E DESCRIZIONE PER L'AGENTE (IN COSA E' SPECIALIZZATO E COSA DEVE FARE)
 descrizione = [
@@ -203,17 +202,6 @@ class Agent_Gemini:
         #Metriche di valutazione sulla risposta yes/no del modello gemini
         accuracy_yes_no = corretto_yes_no / len(reale) if len(reale) > 0 else 0
         conf_matrix_yes_no = confusion_matrix(reale_numerico, pred_yes_no)
-
-        '''#Creazione liste per la presenza lesione cutanea
-        presenza_reale = [1 if d["reale"] == "lesione_cutanea" else 0 for d in dati_lesioni_cutanee]
-        presenza_predetta = [1 if d["etichetta_analisi_presente"] == 1 else 0 for d in dati_lesioni_cutanee]
-        tot_analisi = len([a for a in dati_lesioni_cutanee]) #num immagini di lesioni cutanee
-        reale_completa = [1 if d["reale"] == "lesione_cutanea" else 0 for d in self.dati["valutate"]]
-        predetta_completa = [1 if d["etichetta_analisi_presente"] == 1 else 0 for d in self.dati["valutate"]]
-
-        #Metriche per la presenza della classificazione nella risposta
-        accuracy_presenza_analisi = sum(1 for p, r in zip(presenza_predetta, presenza_reale) if p == r) / len(presenza_reale)
-        conf_matrix_presenza_analisi = confusion_matrix(reale_completa, predetta_completa)'''
 
         #Creazione liste per la presenza lesione cutanea
         dati_lesioni_rilevate = [d for d in self.dati["valutate"] if d["pred_yes_no"] == 1]

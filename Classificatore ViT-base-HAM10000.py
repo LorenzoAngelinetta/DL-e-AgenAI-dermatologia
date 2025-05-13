@@ -17,9 +17,6 @@ path_valutazione = "Path del dataset di test"
 path_csv = "Path del file.csv contenente le etichette per le immagini di test"
 json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 
-#RISORSE DI CALCOLO
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 #DIZIONARIO DELLE CLASSI PER AVERE IL NOME DELLA CLASSE IDENTIFICATA DA HAM10000
 etichette_classi = {
     0: "Cheratosi attiniche e carcinoma intraepiteliale / malattia di Bowen (akiec)",
