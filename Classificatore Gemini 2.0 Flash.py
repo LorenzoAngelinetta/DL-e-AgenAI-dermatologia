@@ -1,6 +1,4 @@
-#INSTALLAZIONE E IMPORTAZIONE LIBRERIE
-!pip install agno duckduckgo-search
-
+#IMPORTAZIONE DELLE LIBRERIE
 import torch
 import os
 from agno.agent import Agent
@@ -8,10 +6,8 @@ from agno.models.google import Gemini
 from agno.tools.duckduckgo import DuckDuckGoTools
 from agno.media import Image
 from sklearn.metrics import accuracy_score, confusion_matrix
-import google.colab.drive as drive
 import time
 import json
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -69,7 +65,7 @@ nomi_estesi = {
 class Agent_Gemini:
     def __init__(self): #Costruttore della classe
         self.agent = Agent(
-                model = Gemini(id = "gemini-2.0-flash-exp"), #id AI utilizzata
+                model = Gemini(id = "gemini-2.0-flash-exp"), #id LLM utilizzatO
                 tools = [DuckDuckGoTools()],
                 show_tool_calls=True,
                 instructions = istruzioni,
@@ -110,7 +106,7 @@ class Agent_Gemini:
             classificazione_gemini = self.esegui(testo, img_path) #ottengo la risposta dal modello
             classificazione_gemini_numerica = 8
 
-            for numero in acronimo_classi:
+            for numero in acronimo_classi: #controllo se nella risposta è stata messa la classificazione
                 if acronimo_classi[numero] in classificazione_gemini or any(nome in classificazione_gemini for nome in nomi_estesi[numero]):
                     classificazione_gemini_numerica = numero
                     break

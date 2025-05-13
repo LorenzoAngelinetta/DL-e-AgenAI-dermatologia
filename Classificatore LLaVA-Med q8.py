@@ -1,18 +1,13 @@
-#INSTALLAZIONE E IMPORTAZIONE LIBRERIE
-!pip install agno duckduckgo-search ollama
-
+#IMPORTAZIONE LIBRERIE
 from agno.tools.duckduckgo import DuckDuckGoTools
 import torch
-import torch.nn.functional as F
 import os
 from agno.agent import Agent
 from agno.media import Image
 from agno.models.ollama import Ollama
 from sklearn.metrics import accuracy_score, confusion_matrix
-import google.colab.drive as drive
 import json
 import time
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -62,7 +57,7 @@ nomi_estesi = {
 class Agent_Ollama:
     def __init__(self): #Costruttore della classe
         self.agent = Agent(
-                model=Ollama(id="z-uo/llava-med-v1.5-mistral-7b_q8_0"),
+                model=Ollama(id="z-uo/llava-med-v1.5-mistral-7b_q8_0"), #Id LLM utilizzato
                 tools = [DuckDuckGoTools()],
                 show_tool_calls=True,
                 instructions = istruzioni,
@@ -104,7 +99,7 @@ class Agent_Ollama:
             classificazione_llavamed = self.esegui(testo, img_path) #ottengo la risposta dal modello
             classificazione_llavamed_numerica = 7
 
-            for numero in acronimo_classi:
+            for numero in acronimo_classi: #controllo se nella risposta è stata messa la classificazione
                 if any(nome in classificazione_llavamed.lower() for nome in nomi_estesi[numero]) or acronimo_classi[numero] in classificazione_llavamed.lower():
                     classificazione_llavamed_numerica = numero
                 if all(acronimo_classi[key] in classificazione_llavamed.lower() for key in acronimo_classi if key != max(acronimo_classi)) and acronimo_classi[max(acronimo_classi)] not in classificazione_llavamed.lower():
@@ -173,7 +168,7 @@ ollama_agent = Agent_Ollama()
 
 #VALUTAZIONE DEL MODELLO SU UN SET DI IMG DI LESIONI CUTANEE
 input_testuale = "What type of skin lesion class is most likely (among akiec, bcc, bkl, df, mel, nv, vasc)? Use the characteristics in the description to identify the best match and choose only one class."
-
 ollama_agent.salvataggio_analisi(path_valutazione, input_testuale)
+
 #STAMPA DELLE METRICHE DI VALUTAZIONE
 ollama_agent.calcola_metriche()
