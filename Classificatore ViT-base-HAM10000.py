@@ -3,7 +3,7 @@ from transformers import ViTImageProcessor, ViTForImageClassification
 from PIL import Image
 from sklearn.metrics import accuracy_score, confusion_matrix
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F 
 import os
 import pandas as pd
 import json
