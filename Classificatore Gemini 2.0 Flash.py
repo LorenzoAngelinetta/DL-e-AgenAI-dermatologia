@@ -17,10 +17,9 @@ import seaborn as sns
 import pandas as pd
 
 #CARICAMENTO DEL DRIVE
-drive.mount('/content/drive')
-path_valutazione = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/ISIC_TEST"
-json_path = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/Salvataggi_JSON_finali/classificazione_gemini.json"
-path_csv = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/ISIC_labels.csv"
+path_valutazione = "Path del dataset di test"
+path_csv = "Path del file.csv contenente le etichette per le immagini di test"
+json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 
 #CHIAVE API PER UTILIZZARE AGENTE GEMINI
 os.environ["GOOGLE_API_KEY"] = "CHIAVE API"
