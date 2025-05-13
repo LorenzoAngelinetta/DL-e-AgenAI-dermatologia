@@ -274,4 +274,4 @@ input_testuale = "What type of skin lesion is it?"
 gemini_agent.salvataggio_analisi(path_valutazione, input_testuale)
 
 #STAMPA DELLE METRICHE DI VALUTAZIONE
-gemini_agent.calcola_metriche()
+gemini_agent.calcola_metriche() 
