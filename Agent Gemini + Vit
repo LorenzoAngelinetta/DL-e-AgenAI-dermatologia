@@ -9,7 +9,7 @@ from agno.agent import Agent
 from agno.models.google import Gemini
 from agno.tools.duckduckgo import DuckDuckGoTools
 from agno.media import Image
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix 
 import google.colab.drive as drive
 import time
 import json
@@ -19,12 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-#CARICAMENTO DEL DRIVE
-drive.mount('/content/drive')
-path_valutazione = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/ISIC_ImageNet"
-path_prova = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/Img_prova"
-path_csv = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/ISIC_labels.csv"
-json_path = "/content/drive/MyDrive/Tesi_Angelinetta_Lorenzo/Salvataggi_JSON_finali/gemini(no_tool)_ViT.json"
+ciuao
 
 #CHIAVE API PER UTILIZZARE AGENTE GEMINI
 os.environ["GOOGLE_API_KEY"] = ""
