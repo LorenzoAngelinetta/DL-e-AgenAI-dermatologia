@@ -88,8 +88,7 @@ class Agent_Ollama:
         img = Image(filepath=immagine)  # Carica immagine
         risposta = self.agent.run("Describe the details of this skin lesion image. " + vit, images=[img]).content #risposta ottenuta da LLaVaMed + vit
         return risposta
-
-
+        
     #Metodo  per ottenere dettagli sulla classificazione dell'immagine con 'vit-base-HAM-10000-patch-32'
     def classificazione_vit(self, img):
         classe_vit = modello_ViT.output_vit(img) #predizione della classe della lesione

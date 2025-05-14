@@ -3,7 +3,7 @@ from transformers import ViTImageProcessor, ViTForImageClassification
 import torch
 import torch.nn.functional as F
 import os
-from agno.agent import Agent
+from agno.agent import Agent 
 from agno.models.google import Gemini
 from agno.media import Image
 from sklearn.metrics import confusion_matrix
@@ -274,4 +274,4 @@ input_testuale = "What type of skin lesion is it?"
 gemini_agent.salvataggio_analisi(path_valutazione, input_testuale)
 
 #STAMPA DELLE METRICHE DI VALUTAZIONE
-gemini_agent.calcola_metriche()
+gemini_agent.calcola_metriche() 
