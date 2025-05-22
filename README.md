@@ -5,6 +5,7 @@ Questo progetto esplora e confronta diversi modelli di Deep Learning e Agent AI 
 - Classificare correttamente immagini di lesioni cutanee, identificandone la classe di appartenenza.
 - Distinguere tra immagini dermatologiche e immagini generiche.
 - Generare descrizioni testuali coerenti per le immagini classificate come lesioni, includendo la categoria identificata e valutando l’efficacia comunicativa della risposta.
+
 Questi strumenti mirano a contribuire allo sviluppo di sistemi di supporto clinico basati sull’AI, migliorando l’efficienza diagnostica e rendendo la tecnologia un alleato affidabile nel campo sanitario.
 
 ## 📂 DATASET 
