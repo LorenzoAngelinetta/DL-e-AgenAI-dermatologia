@@ -1,14 +1,14 @@
 #IMPORTAZIONE LIBRERIE
-from transformers import ViTImageProcessor, ViTForImageClassification
+from transformers import ViTImageProcessor, ViTForImageClassification 
 import torch
 import torch.nn.functional as F
 import os
 from agno.agent import Agent
+from agno.models.google import Gemini
 from agno.media import Image
-from agno.models.ollama import Ollama
-from sklearn.metrics import confusion_matrix
-import json
+from sklearn.metrics import confusion_matrix 
 import time
+import json
 import pandas as pd
 import random
 import matplotlib.pyplot as plt
@@ -19,15 +19,18 @@ path_valutazione = "Path del dataset di test"
 path_csv = "Path del file.csv contenente le etichette per le immagini di test"
 json_path = "Path del file.json per il salvataggio delle analisi eseguite"
 
+#CHIAVE API PER UTILIZZARE AGENTE GEMINI
+os.environ["GOOGLE_API_KEY"] = "CHIAVE API"
+
 #ISTRUZIONI E DESCRIZIONE PER L'AGENTE (IN COSA E' SPECIALIZZATO E COSA DEVE FARE)
 descrizione = [
-    "You are specialized in dermatology and you are an image analyzer for skin lesions."
+    "You are an AI agent specialized in dermatology. Your task is to analyze both the image and the description to determine if they refer to a skin lesion .",
 ]
 
 istruzioni = [
-    "If the image show a skin lesion, respond yes otherwise no"
-    "Include the histological examination with its percentage ONLY if it is skin lesion."
-    "Provide explanation of the inserted text and features observed in the image.",
+    "If both the image and the description refer to a skin lesion, respond with 'Yes' and provide a detailed explanation of the text and features observed in the image.",
+    "If the image refers to a skin lesion but the description does not, suggest the user to ask only a question about the image.",
+    "If the description refers to a skin lesion but the image does not, describe the image briefly in few words.",
 ]
 
 #DIZIONARIO DELLE CLASSI PER AVERE IL NOME DELLA CLASSE IDENTIFICATA DA HAM10000
@@ -44,59 +47,49 @@ etichette_classi = {
 acronimo_classi = {0: "akiec", 1: "bcc", 2: "bkl", 3: "df", 4: "mel", 5: "nv", 6: "vasc"}
 
 nomi_estesi = {
-    0: ["actinic keratoses", "intraepithelial carcinoma", "Bowen's disease"],
+    0: ["actinic keratoses", "actinic keratosis", "intraepithelial carcinoma", "Bowen's disease"],
     1: ["basal cell carcinoma"],
     2: ["benign keratosis-like lesions"],
-    3: ["dermatofibroma"],
+    3: ["dermatofibroma", "dermatofibromas"],
     4: ["melanoma"],
     5: ["melanocytic nevi", "mole", "nevus"],
     6: ["vascular lesions"]
 }
 
-parole_chiave = ["skin", "derm", "lesion", "tissue", "histopathology",
-                "epidermis", "dermis", "melanoma", "carcinoma", "biopsy",
-                "rash", "eczema", "psoriasis", "acne", "nevus", "mole",
-                "wound", "keratosis", "papule", "nodule", "plaque",
-                "erythema", "alopecia", "blister", "actinic", "keratinocyte",
-                "bullae", "vesicle", "cutaneous", "squamous", "basal",
-                "melanocyte", "inflammation", "infection", "fungal",
-                "dermatitis", "seborrheic"]
-
-#CLASSE AGENTE OLLAMA
-class Agent_Ollama:
+#CLASSE AGENTE GEMINI
+class Agent_Gemini:
     def __init__(self): #Costruttore della classe
         self.agent = Agent(
-                model=Ollama(id="z-uo/llava-med-v1.5-mistral-7b_q8_0"),
+                model = Gemini(id = "gemini-2.0-flash-exp"), #id AI utilizzata
                 tools = [],
-                show_tool_calls=True,
                 instructions = istruzioni,
                 description = descrizione,
                 markdown = True,
               )
         self.dati = self.carica_dati() #carica i dati dal file json
-        self.risposta_vit = ""
 
-    #Metodo per runnare l'agent
-    def esegui_classificazione(self, testo, immagine):
-        img = Image(filepath=immagine)  # Carica immagine
-        risposta = self.agent.run(testo, images=[img]).content #risposta ottenuta da LLaVaMed + vit
+    #Controllo con Gemini per vedere se input è coerente per le lesioni cutanee
+    def rilevazione_gemini(self, testo, immagine):
+        img = Image(filepath = immagine) #apertura img
+        risposta = self.agent.run( #risposta del modello ('yes' se input è coerente a lesioni cutanee)
+            testo,
+            images=[img]
+        ).content #estraggo solo risposta da tutti i dettagli
         return risposta
 
-    #Metodo per runnare l'agent
-    def esegui(self, immagine):
-        vit = self.classificazione_vit(immagine) #chiamo metodo di classificazione
-        img = Image(filepath=immagine)  # Carica immagine
-        risposta = self.agent.run("Describe the details of this skin lesion image. " + vit, images=[img]).content #risposta ottenuta da LLaVaMed + vit
+    #Risposta di Gemini utilizzando dati ottenuti da ViT
+    def spiegazione_gemini(self, testo, immagine):
+        img = Image(filepath = immagine) #apertura img
+        risposta = self.agent.run( #risposta del modello utilizzando il testo con la classificazione fornita da ViT
+            testo,
+            images=[img]
+        ).content #estraggo solo risposta da tutti i dettagli
         return risposta
-        
-    #Metodo  per ottenere dettagli sulla classificazione dell'immagine con 'vit-base-HAM-10000-patch-32'
-    def classificazione_vit(self, img):
-        classe_vit = modello_ViT.output_vit(img) #predizione della classe della lesione
-        for i, prob in enumerate(modello_ViT.probabilita_vit().squeeze().tolist()):
-            if etichette_classi[i] == etichette_classi[classe_vit]:
-              probabilita = prob
-        output_string = f"The classifier ViT model predicted: {etichette_classi[classe_vit]} with percentage {probabilita:.2f}%\n"
-        self.risposta_vit = classe_vit
+
+    #Metodo per la classificazione dell'immagine con 'vit-base-HAM-10000-patch-32' e stampa dell'output
+    def classificazione_vit(self, immagine):
+        nome_classe = etichette_classi[modello_ViT.output_vit(immagine)]  # Conversione della classe
+        output_string = f"\nClass predicted by the 'ViT-base-HAM10000' model: {nome_classe}\n"
 
         return output_string
 
@@ -120,33 +113,36 @@ class Agent_Ollama:
         img_test = sorted([os.path.join(path_valutazione, img) for img in os.listdir(path_valutazione) if img.lower().endswith(('png', 'jpg', 'jpeg'))]) #lista delle img ordinate
         img_test = [img for img in img_test if img not in [d["img"] for d in self.dati["valutate"]]] #lista togliendo le img già valutate
 
-        count = 0
-        random.shuffle(img_test) #immagini mischia
+        count = 0 # serve per fare la pausa di tot secondi (per limite chiamate API a Gemini)
+        random.shuffle(img_test) #immagini mischiate
 
         for img_path in img_test:
-            img_name = os.path.basename(img_path).split('.')[0] #nome immagine senza estensione
-            print(img_name)
+            img_name = os.path.basename(img_path).split('.')[0]
+
             if img_name in df.index: #verifico se è nel csv (quindi se è lesione)
                 etichetta_reale = "lesione_cutanea"
             else:
                 etichetta_reale = "non_etichettata"
 
-            risposta_llavamed = self.esegui_classificazione(testo, img_path) #ottengo la risposta dal modello sulla classificazione
+            risposta_gemini = self.rilevazione_gemini(testo, img_path) #se img e testo riguardano lesioni cutanee
 
-            if any(parola in risposta_llavamed.lower() for parola in parole_chiave): #controlla se la classificazione fatta è di una lesione cutanea
-                pred_llavamed= 1 # è giusto che ha rilevato lesione cutanea
-                risposta_llavamed_finale = self.esegui(img_path) #ottengo la risposta dal modello
-                etichetta_analisi_presente = 1 if acronimo_classi[self.risposta_vit] in risposta_llavamed_finale.lower() or any(n in risposta_llavamed_finale.lower() for n in nomi_estesi[self.risposta_vit]) else 0 #verifica se predizione di ViT nella risposta di Ollama
-                analisi_lesione = acronimo_classi[self.risposta_vit]
+            if "Yes" in risposta_gemini:
+              pred_gemini = 1
+              classe_vit = modello_ViT.output_vit(img_path) #classe ottenuta di ViT
+              stringa_ViT = self.classificazione_vit(img_path) #informazioni ottenute da ViT
+              input_aggiornato = testo + " The classification model gave me this information. " + stringa_ViT #nuovo input da passare al modello Gemini
+              risposta_finale_gemini = self.spiegazione_gemini(input_aggiornato, img_path) #ottenere descrizione finale di Gemini basata sulla predizione ViT
+              etichetta_analisi_presente = 1 if acronimo_classi[classe_vit] in risposta_finale_gemini.lower() or any(nome in risposta_finale_gemini.lower() for nome in nomi_estesi[classe_vit]) else 0 #verifica se predizione di ViT nella descrizione di Gemini
+              analisi_lesione = acronimo_classi[classe_vit]
             else:
-                pred_llavamed = 0
-                analisi_lesione = ""
-                etichetta_analisi_presente = ""
-                risposta_llavamed_finale = ""
+              pred_gemini = 0
+              analisi_lesione = ""
+              etichetta_analisi_presente = ""
+              risposta_finale_gemini = risposta_gemini
 
-                #Si fa questo controllo perchè se viene classificata lesione cutanea da gemini ma non lo è viene elaborata una risposta (vedere matrice confusione)
-                for val in acronimo_classi.values():
-                  if val in risposta_llavamed_finale.lower():
+              #Si fa questo controllo perchè se viene classificata lesione cutanea da gemini ma non lo è viene elaborata una risposta (vedere matrice confusione)
+              for val in acronimo_classi.values():
+                  if val in risposta_finale_gemini.lower():
                       analisi_lesione = val
                       etichetta_analisi_presente = 1
                       break
@@ -155,25 +151,25 @@ class Agent_Ollama:
             self.dati["valutate"].append({
                   "img": img_path,
                   "reale": etichetta_reale,
-                  "pred_yes_no": pred_llavamed,
-                  "risposta_yes_no": risposta_llavamed,
+                  "pred_yes_no": pred_gemini,
                   "analisi_lesione": analisi_lesione,
                   "etichetta_analisi_presente": etichetta_analisi_presente,
-                  "descrizione_finale": risposta_llavamed_finale
+                  "descrizione_finale": risposta_finale_gemini
               })
 
             self.salva_dati() #salvataggio dell'analisi su quell'img
-            count += 1
-            print(f"Image: {img_path} - Prediction LLaVaMed: {pred_llavamed} - Real Label: {etichetta_reale} - Label present in LLaVaMed Answer: {etichetta_analisi_presente}")
+            time.sleep(0.6)
+            count+=1;
 
-            if count % 10 == 0:
-                print("Pause fo exit without problem.")
-                time.sleep(10)
-                print("End pause.")
+            print(f"Image: {img_path} - Prediction Gemini: {pred_gemini} - Real Label: {etichetta_reale} - Label present in Gemini Answer: {etichetta_analisi_presente}")
+
+            if count % 5 == 0:
+                print("\nWaiting for 55 seconds to prevent overload on Gemini API calls......\nIf you want to stop the analysis, do it now to avoid errors.\n")
+                time.sleep(55)
 
         print("The list of image is finished. Check the metrics value.")
 
-    #Metodo per calcolare le metriche di valutazione finale: accuracy e matrice di confusione
+    #Metodo per calcolare le metriche di valutazione finale: accuracy e matrice di confusione (auc roc non ha senso su prima chiamata API perchè ho valutazione su un unico set di classi)
     def calcola_metriche(self):
         if not self.dati["valutate"]:
             print("No data available for metric calculation.")
@@ -270,12 +266,12 @@ class ViT:
         return probabilita
 
 #ISTANZIO OGGETTI CLASSE
-ollama_agent = Agent_Ollama()
+gemini_agent = Agent_Gemini()
 modello_ViT = ViT()
 
 #VALUTAZIONE DEL MODELLO SU UN SET DI IMG DI LESIONI CUTANEE
-input_testuale = "What is in the image?"
-ollama_agent.salvataggio_analisi(path_valutazione, input_testuale)
+input_testuale = "What type of skin lesion is it?"
+gemini_agent.salvataggio_analisi(path_valutazione, input_testuale)
 
 #STAMPA DELLE METRICHE DI VALUTAZIONE
-ollama_agent.calcola_metriche()
+gemini_agent.calcola_metriche()

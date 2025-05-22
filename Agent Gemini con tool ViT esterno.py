@@ -1,13 +1,12 @@
 #IMPORTAZIONE LIBRERIE
-from transformers import ViTImageProcessor, ViTForImageClassification 
+from transformers import ViTImageProcessor, ViTForImageClassification
 import torch
 import torch.nn.functional as F
-import os
-from agno.agent import Agent
+import os 
+from agno.agent import Agent 
 from agno.models.google import Gemini
-from agno.tools.duckduckgo import DuckDuckGoTools
 from agno.media import Image
-from sklearn.metrics import confusion_matrix 
+from sklearn.metrics import confusion_matrix
 import time
 import json
 import pandas as pd
@@ -29,9 +28,7 @@ descrizione = [
 ]
 
 istruzioni = [
-    "If both the image and the description refer to a skin lesion, respond with 'Yes' and provide a detailed explanation of the text and features observed in the image.",
-    "If the image refers to a skin lesion but the description does not, suggest the user to ask only a question about the image.",
-    "If the description refers to a skin lesion but the image does not, describe the image briefly in few words.",
+    "If both the image and the text refer to skin lesions, respond 'Yes' and perform the classification with the tools and use this information added to the initial text to answer the question in detail and explain the characteristics observed in the image.",
 ]
 
 #DIZIONARIO DELLE CLASSI PER AVERE IL NOME DELLA CLASSE IDENTIFICATA DA HAM10000
@@ -48,7 +45,7 @@ etichette_classi = {
 acronimo_classi = {0: "akiec", 1: "bcc", 2: "bkl", 3: "df", 4: "mel", 5: "nv", 6: "vasc"}
 
 nomi_estesi = {
-    0: ["actinic keratoses", "actinic keratosis", "intraepithelial carcinoma", "Bowen's disease"],
+    0: ["actinic keratoses", "intraepithelial carcinoma", "Bowen's disease"],
     1: ["basal cell carcinoma"],
     2: ["benign keratosis-like lesions"],
     3: ["dermatofibroma", "dermatofibromas"],
@@ -62,35 +59,39 @@ class Agent_Gemini:
     def __init__(self): #Costruttore della classe
         self.agent = Agent(
                 model = Gemini(id = "gemini-2.0-flash-exp"), #id AI utilizzata
-                tools = [DuckDuckGoTools()],
+                tools = [self.classificazione_vit], #tool chiamata quando avremo bisogno di classificare lesione cutanea
+                show_tool_calls=True,
                 instructions = istruzioni,
                 description = descrizione,
                 markdown = True,
               )
         self.dati = self.carica_dati() #carica i dati dal file json
+        self.immagine = ""
+        self.risposta_vit = ""
 
-    #Controllo con Gemini per vedere se input è coerente per le lesioni cutanee
-    def rilevazione_gemini(self, testo, immagine):
-        img = Image(filepath = immagine) #apertura img
-        risposta = self.agent.run( #risposta del modello ('yes' se input è coerente a lesioni cutanee)
-            testo,
-            images=[img]
-        ).content #estraggo solo risposta da tutti i dettagli
+    #Metodo per runnare l'agent
+    def esegui(self, testo, immagine):
+        self.immagine = immagine #salvo il percorso img (utilizzato dal tool se verà chiamato)
+        img = Image(filepath=immagine)  # Carica immagine
+
+        risposta = self.agent.run(testo, images=[img]).content #risposta ottenuta da Gemini + tool se chiamato
+
         return risposta
 
-    #Risposta di Gemini utilizzando dati ottenuti da ViT
-    def spiegazione_gemini(self, testo, immagine):
-        img = Image(filepath = immagine) #apertura img
-        risposta = self.agent.run( #risposta del modello utilizzando il testo con la classificazione fornita da ViT
-            testo,
-            images=[img]
-        ).content #estraggo solo risposta da tutti i dettagli
-        return risposta
+    #Metodo 'tool' per ottenere dettagli sulla classificazione dell'immagine con 'vit-base-HAM-10000-patch-32'
+    def classificazione_vit(self) -> str:
+        """
+        Classifies only a skin lesion image
 
-    #Metodo per la classificazione dell'immagine con 'vit-base-HAM-10000-patch-32' e stampa dell'output
-    def classificazione_vit(self, immagine):
-        nome_classe = etichette_classi[modello_ViT.output_vit(immagine)]  # Conversione della classe
-        output_string = f"\nClass predicted by the 'ViT-base-HAM10000' model: {nome_classe}\n"
+        Returns:
+            str: Classification information that will be used to answer the question with the image
+        """
+
+        # Predizione della classe della lesione
+        classe_vit = modello_ViT.output_vit(self.immagine)
+        nome_classe = etichette_classi[classe_vit]
+        output_string = f"\nClass predicted by the 'ViT-base-HAM10000' classification model: {nome_classe}\n"
+        self.risposta_vit = classe_vit
 
         return output_string
 
@@ -118,44 +119,42 @@ class Agent_Gemini:
         random.shuffle(img_test) #immagini mischiate
 
         for img_path in img_test:
-            img_name = os.path.basename(img_path).split('.')[0]
+            img_name = os.path.basename(img_path).split('.')[0] #nome immagine senza estensione
+            risposta_gemini = self.esegui(testo, img_path) #ottengo la risposta dal modello
+
+            if "Yes" in risposta_gemini: #ha rilevato lesione cutanea se è yes
+                pred_gemini = 1
+            else:
+                pred_gemini = 0
 
             if img_name in df.index: #verifico se è nel csv (quindi se è lesione)
                 etichetta_reale = "lesione_cutanea"
+                analisi_lesione = acronimo_classi[self.risposta_vit]
+
+                # Verifica se il tipo di lesione predetto da vit è presente nella risposta di Gemini
+                if analisi_lesione in risposta_gemini.lower() or any(nome in risposta_gemini.lower() for nome in nomi_estesi[self.risposta_vit]): #verifica se tipo lesione è in risposta
+                    etichetta_analisi_presente = 1
+                else:
+                    etichetta_analisi_presente = 0
             else:
                 etichetta_reale = "non_etichettata"
+                analisi_lesione = ""
 
-            risposta_gemini = self.rilevazione_gemini(testo, img_path) #se img e testo riguardano lesioni cutanee
+                #Si fa questo controllo perchè se viene classificata lesione cutanea da gemini ma non lo è viene elaborata una risposta (vedere matrice confusione)
+                for val in acronimo_classi.values():
+                    if val in risposta_gemini.lower():
+                        analisi_lesione = val
+                        etichetta_analisi_presente = 1
+                        break
 
-            if "Yes" in risposta_gemini:
-              pred_gemini = 1
-              classe_vit = modello_ViT.output_vit(img_path) #classe ottenuta di ViT
-              stringa_ViT = self.classificazione_vit(img_path) #informazioni ottenute da ViT
-              input_aggiornato = testo + " The classification model gave me this information. " + stringa_ViT #nuovo input da passare al modello Gemini
-              risposta_finale_gemini = self.spiegazione_gemini(input_aggiornato, img_path) #ottenere descrizione finale di Gemini basata sulla predizione ViT
-              etichetta_analisi_presente = 1 if acronimo_classi[classe_vit] in risposta_finale_gemini.lower() or any(nome in risposta_finale_gemini.lower() for nome in nomi_estesi[classe_vit]) else 0 #verifica se predizione di ViT nella descrizione di Gemini
-              analisi_lesione = acronimo_classi[classe_vit]
-            else:
-              pred_gemini = 0
-              analisi_lesione = ""
-              etichetta_analisi_presente = ""
-              risposta_finale_gemini = risposta_gemini
-
-              #Si fa questo controllo perchè se viene classificata lesione cutanea da gemini ma non lo è viene elaborata una risposta (vedere matrice confusione)
-              for val in acronimo_classi.values():
-                  if val in risposta_finale_gemini.lower():
-                      analisi_lesione = val
-                      etichetta_analisi_presente = 1
-                      break
-
-            #creazione della struttura per l'analisi dell'immagine da mettere nel file json
+            #struttura dati per il salvataggio di ogni img
             self.dati["valutate"].append({
                   "img": img_path,
                   "reale": etichetta_reale,
                   "pred_yes_no": pred_gemini,
                   "analisi_lesione": analisi_lesione,
                   "etichetta_analisi_presente": etichetta_analisi_presente,
-                  "descrizione_finale": risposta_finale_gemini
+                  "descrizione_finale": risposta_gemini
               })
 
             self.salva_dati() #salvataggio dell'analisi su quell'img
@@ -236,7 +235,7 @@ class Agent_Gemini:
         sns.heatmap(conf_matrix_presenza_analisi, annot=True, fmt="d", cmap="Blues", cbar=False, xticklabels=["Absent", "Present"], yticklabels=["Absent", "Present"])
         plt.xlabel("Predicted Labels")
         plt.ylabel("True Labels")
-        plt.title("Confusion Matrix - Presence prediction in final response")
+        plt.title("Confusion Matrix - Presence prediction")
         plt.show()
 
 
@@ -275,4 +274,4 @@ input_testuale = "What type of skin lesion is it?"
 gemini_agent.salvataggio_analisi(path_valutazione, input_testuale)
 
 #STAMPA DELLE METRICHE DI VALUTAZIONE
-gemini_agent.calcola_metriche()
+gemini_agent.calcola_metriche() 
