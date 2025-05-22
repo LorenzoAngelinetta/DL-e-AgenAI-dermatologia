@@ -1,19 +1,19 @@
 # Deep Learning e Agent AI in dermatologia
 
-##📌 OBIETTIVO  
+## 📌 OBIETTIVO  
 Questo progetto esplora e confronta diversi modelli di Deep Learning e Agent AI multimodali per la diagnosi automatica di immagini dermatologiche. L’obiettivo finale è sviluppare e valutare sistemi capaci di:
 - Classificare correttamente immagini di lesioni cutanee, identificandone la classe di appartenenza.
 - Distinguere tra immagini dermatologiche e immagini generiche.
 - Generare descrizioni testuali coerenti per le immagini classificate come lesioni, includendo la categoria identificata e valutando l’efficacia comunicativa della risposta.
 Questi strumenti mirano a contribuire allo sviluppo di sistemi di supporto clinico basati sull’AI, migliorando l’efficienza diagnostica e rendendo la tecnologia un alleato affidabile nel campo sanitario.
 
-##📂 DATASET 
+## 📂 DATASET 
 - **HAM_TEST2018**: set di valutazione contenete 1511 immagini dermatologiche, suddivise in 7 classi, utilizzato per la valutazione dei modelli classificatori  
   - Link: https://challenge.isic-archive.com/data/#2018 (include il file.csv con le corrispondenti etichette)  
 - **HAM TEST2018 + ImageNetMini1000**: estensione del dataset precedente con 1000 immagini generiche provenienti da ImageNet, arrivando a un totale di 2511 immagini, usate per la valutazione degli Agent AI.  
   - Link: https://www.kaggle.com/datasets/ifigotin/imagenetmini-1000  
 
-##🛠️ SETUP
+## 🛠️ SETUP
 Per eseguire il codice, è necessario inserire i percorsi locali a:  
 - 📁 Dataset di valutazione  
 - 📄 File.csv contenente le etichette delle immagini  
@@ -27,7 +27,7 @@ pip install torch agno scikit-learn matplotlib seaborn pandas pillow
 ```  
 Le librerie specifiche per ciascun modello sono indicate nelle relative sezioni.
 
-##🤖 MODELLI REALIZZATI 
+## 🤖 MODELLI REALIZZATI 
 Modelli utilizzati come classificatoridi immagini dermatologiche: 
 
 - **ViT-base-HAM10000**: modello puramente visivo basato su un architettura Vision Transformer e addestrato su un dataset composto da 10.000 immagini di lesioni cutanee.
@@ -74,7 +74,7 @@ Gli agenti AI sviluppati operano in due fasi: identificazione dell’immagine co
     pip install agno ollama transformers
     ```  
 
-##📈 PERFORMACE OTTENUTE  
+## 📈 PERFORMACE OTTENUTE  
 
 | Classificatori       | Accuracy classificazione lesione |
 |----------------------|----------------------------------|
