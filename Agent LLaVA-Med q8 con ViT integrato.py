@@ -68,7 +68,6 @@ class Agent_Ollama:
         self.agent = Agent(
                 model=Ollama(id="z-uo/llava-med-v1.5-mistral-7b_q8_0"),
                 tools = [],
-                show_tool_calls=True,
                 instructions = istruzioni,
                 description = descrizione,
                 markdown = True,
