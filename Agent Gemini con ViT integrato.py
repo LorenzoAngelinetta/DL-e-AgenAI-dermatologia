@@ -5,7 +5,6 @@ import torch.nn.functional as F
 import os
 from agno.agent import Agent
 from agno.models.google import Gemini
-from agno.tools.duckduckgo import DuckDuckGoTools
 from agno.media import Image
 from sklearn.metrics import confusion_matrix 
 import time
@@ -62,7 +61,7 @@ class Agent_Gemini:
     def __init__(self): #Costruttore della classe
         self.agent = Agent(
                 model = Gemini(id = "gemini-2.0-flash-exp"), #id AI utilizzata
-                tools = [DuckDuckGoTools()],
+                tools = [],
                 instructions = istruzioni,
                 description = descrizione,
                 markdown = True,
