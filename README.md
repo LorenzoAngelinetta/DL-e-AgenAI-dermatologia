@@ -27,7 +27,7 @@ pip install torch agno scikit-learn matplotlib seaborn pandas pillow
 ```  
 Le librerie specifiche per ciascun modello sono indicate nelle relative sezioni.
 
-## 🤖 MODELLI REALIZZATI 
+## 🤖 MODELLI 
 Modelli utilizzati come classificatoridi immagini dermatologiche: 
 
 - **ViT-base-HAM10000**: modello puramente visivo basato su un architettura Vision Transformer e addestrato su un dataset composto da 10.000 immagini di lesioni cutanee.
